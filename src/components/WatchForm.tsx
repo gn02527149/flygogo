@@ -10,15 +10,6 @@ const TRIP_TYPES: { value: TripType; label: string; hint: string }[] = [
   { value: "multi_city", label: "外站票", hint: "4 段以上" },
 ];
 
-// 使用真實報價（SerpApi 免費額度 250 次/月）時，高頻掃描會快速耗盡額度；
-// 機票價格一天通常也只變動 2–4 次，預設每天一次。
-const FREQUENCIES = [
-  { value: 1440, label: "每天（建議）" },
-  { value: 720, label: "每 12 小時" },
-  { value: 360, label: "每 6 小時" },
-  { value: 60, label: "每小時（耗額度）" },
-];
-
 const MIN_SEGMENTS = 4;
 
 const emptySegment = (): FlightSegment => ({
@@ -37,7 +28,6 @@ export function WatchForm({
   action: (formData: FormData) => Promise<void>;
 }) {
   const [tripType, setTripType] = useState<TripType>("one_way");
-  const [frequency, setFrequency] = useState(1440);
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
   const [segments, setSegments] = useState<FlightSegment[]>(() =>
@@ -233,45 +223,26 @@ export function WatchForm({
         </div>
       )}
 
-      {/* 偵測頻率 + 每天掃描時間 + 價格門檻 */}
+      {/* 每天掃描時間 + 價格門檻（頻率固定為每天一次） */}
+      <input type="hidden" name="frequency_minutes" value={1440} />
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
-          <label className={labelCls} htmlFor="watch-frequency">
-            偵測頻率
+          <label className={labelCls} htmlFor="watch-scan-hour">
+            每天掃描時間（台灣時間）
           </label>
           <select
-            id="watch-frequency"
-            name="frequency_minutes"
-            value={frequency}
-            onChange={(e) => setFrequency(parseInt(e.target.value, 10))}
+            id="watch-scan-hour"
+            name="scan_hour"
+            defaultValue={8}
             className={inputCls}
           >
-            {FREQUENCIES.map((f) => (
-              <option key={f.value} value={f.value}>
-                {f.label}
+            {Array.from({ length: 24 }, (_, h) => (
+              <option key={h} value={h}>
+                {String(h).padStart(2, "0")}:00
               </option>
             ))}
           </select>
         </div>
-        {frequency >= 1440 ? (
-          <div>
-            <label className={labelCls} htmlFor="watch-scan-hour">
-              每天掃描時間（台灣時間）
-            </label>
-            <select
-              id="watch-scan-hour"
-              name="scan_hour"
-              defaultValue={8}
-              className={inputCls}
-            >
-              {Array.from({ length: 24 }, (_, h) => (
-                <option key={h} value={h}>
-                  {String(h).padStart(2, "0")}:00
-                </option>
-              ))}
-            </select>
-          </div>
-        ) : null}
         <div>
           <label className={labelCls} htmlFor="watch-max-price">
             價格門檻 TWD（選填）
@@ -288,7 +259,7 @@ export function WatchForm({
       </div>
 
       <p className="text-xs text-slate-400">
-        除了門檻價之外，只要掃到的價格低於「當月平均票價」就會在右上角跳出警示。
+        每天在你選的時間自動掃描一次；除了門檻價之外，只要掃到的價格低於「當月平均票價」就會跳出警示。
       </p>
 
       <button
