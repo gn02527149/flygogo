@@ -50,7 +50,7 @@ export default async function RadarPage() {
             href="/radar/new"
             className="flex-1 rounded-lg bg-slate-900 px-4 py-2 text-center text-sm font-semibold text-white transition-colors hover:bg-slate-700 sm:flex-none"
           >
-            ＋ 新增守望
+            ＋ 新增航段
           </Link>
         </div>
       </div>
@@ -59,7 +59,7 @@ export default async function RadarPage() {
 
       {rows.length === 0 ? (
         <Card title="守望清單">
-          <EmptyState message="尚無守望。點「＋ 新增守望」建立第一個。" />
+          <EmptyState message="尚無守望。點「＋ 新增航段」建立第一個。" />
         </Card>
       ) : (
         <WatchTable rows={rows} />

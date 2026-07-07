@@ -29,7 +29,7 @@ export default async function NewWatchPage({
         </Link>
       </div>
       <PageHeader
-        title="新增守望"
+        title="新增航段"
         description="選擇航線與偵測頻率，價格低於當月平均時會即時警示"
       />
 
