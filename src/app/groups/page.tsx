@@ -9,7 +9,7 @@ export default async function GroupsPage() {
 
   return (
     <div>
-      <PageHeader title="目的地群組" description="用機場代碼分群，之後可讓一個守望同時盯多個目的地" />
+      <PageHeader title="目的地群組" description="用機場代碼分群，之後可讓一個航段同時盯多個目的地" />
 
       {!isSupabaseConfigured() ? <ConfigBanner /> : null}
 

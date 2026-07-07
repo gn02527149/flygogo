@@ -401,13 +401,13 @@ export function WatchTable({ rows }: { rows: WatchRow[] }) {
       <div className="hidden md:block">
         <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm md:p-5">
           <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
-            守望清單
+            航段清單
           </h2>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-400">
-                  <th className="py-2 pr-4 font-medium">守望</th>
+                  <th className="py-2 pr-4 font-medium">航段</th>
                   <th className="py-2 pr-4 font-medium">類型</th>
                   <th className="py-2 pr-4 font-medium">頻率</th>
                   <th className="py-2 pr-4 font-medium">最新價格</th>

@@ -32,7 +32,7 @@ export default async function DashboardPage() {
 
       <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
         <StatCard
-          label="雷達守望"
+          label="監控航段"
           value={watches.length}
           hint={`啟用中 ${activeWatches} 個`}
         />
@@ -121,7 +121,7 @@ export default async function DashboardPage() {
                   >
                     <div className="min-w-0">
                       <div className="truncate font-medium text-slate-800">
-                        {watchName.get(snap.watch_id) ?? "（已刪除的守望）"}
+                        {watchName.get(snap.watch_id) ?? "（已刪除的航段）"}
                       </div>
                       <div className="mt-0.5 truncate text-xs text-slate-400">
                         {cheapest
@@ -146,7 +146,7 @@ export default async function DashboardPage() {
 
       <div className="mt-6 text-sm">
         <Link href="/radar" className="text-slate-500 hover:text-slate-800">
-          → 前往雷達管理守望
+          → 前往雷達管理航段
         </Link>
       </div>
     </div>

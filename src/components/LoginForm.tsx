@@ -77,7 +77,7 @@ export function LoginForm() {
         <div className="text-3xl font-bold tracking-tight text-slate-900">
           ✈️ flygogo
         </div>
-        <p className="mt-1.5 text-sm text-slate-500">機票雷達 — 低價守望</p>
+        <p className="mt-1.5 text-sm text-slate-500">機票雷達 — 航段低價監控</p>
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -160,7 +160,7 @@ export function LoginForm() {
       </div>
 
       <p className="mt-4 text-center text-xs text-slate-400">
-        每位使用者的守望與警示互相獨立
+        每位使用者的航段與警示互相獨立
       </p>
     </div>
   );

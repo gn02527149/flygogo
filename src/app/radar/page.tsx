@@ -36,7 +36,7 @@ export default async function RadarPage() {
   return (
     <div>
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between md:mb-6">
-        <PageHeader title="雷達" description="價格守望清單，點擊守望可查看航班明細" />
+        <PageHeader title="雷達" description="航段價格清單，點擊航段可查看航班明細" />
         <div className="-mt-2 flex gap-2 sm:mt-0">
           <form action={scanNowAction} className="flex-1 sm:flex-none">
             <button
@@ -58,8 +58,8 @@ export default async function RadarPage() {
       {!isSupabaseConfigured() ? <ConfigBanner /> : null}
 
       {rows.length === 0 ? (
-        <Card title="守望清單">
-          <EmptyState message="尚無守望。點「＋ 新增航段」建立第一個。" />
+        <Card title="航段清單">
+          <EmptyState message="尚無航段。點「＋ 新增航段」建立第一個。" />
         </Card>
       ) : (
         <WatchTable rows={rows} />

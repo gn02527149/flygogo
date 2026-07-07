@@ -6,7 +6,7 @@ import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "flygogo 機票雷達",
-  description: "機票雷達 — 目的地分群與價格守望",
+  description: "機票雷達 — 目的地分群與航段價格監控",
 };
 
 export default async function RootLayout({

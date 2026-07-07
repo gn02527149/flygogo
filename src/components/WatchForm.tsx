@@ -88,7 +88,7 @@ export function WatchForm({
       {/* 名稱 */}
       <div>
         <label className={labelCls} htmlFor="watch-name">
-          守望名稱（留空自動命名）
+          航段名稱（留空自動命名）
         </label>
         <input
           id="watch-name"
@@ -267,7 +267,7 @@ export function WatchForm({
         disabled={!formValid}
         className="rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
       >
-        建立守望
+        建立航段
       </button>
     </form>
   );
