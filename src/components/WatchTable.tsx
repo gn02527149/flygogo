@@ -20,10 +20,15 @@ const TRIP_LABEL: Record<string, string> = {
   multi_city: "外站票",
 };
 
-function frequencyLabel(minutes: number): string {
+function frequencyLabel(watch: RadarWatch): string {
+  const minutes = watch.frequency_minutes;
+  if (minutes >= 1440) {
+    return watch.scan_hour != null
+      ? `每天 ${String(watch.scan_hour).padStart(2, "0")}:00`
+      : `每 ${minutes / 1440} 天`;
+  }
   if (minutes < 60) return `每 ${minutes} 分鐘`;
-  if (minutes < 1440) return `每 ${minutes / 60} 小時`;
-  return `每 ${minutes / 1440} 天`;
+  return `每 ${minutes / 60} 小時`;
 }
 
 function routeSummary(watch: RadarWatch): string {
@@ -230,7 +235,7 @@ function DetailModal({ row, onClose }: { row: WatchRow; onClose: () => void }) {
           <div className="rounded-lg bg-slate-50 p-3">
             <div className="text-xs text-slate-400">偵測頻率</div>
             <div className="mt-0.5 text-sm font-semibold text-slate-700">
-              {frequencyLabel(watch.frequency_minutes)}
+              {frequencyLabel(watch)}
             </div>
           </div>
           <div className="rounded-lg bg-slate-50 p-3">
@@ -375,7 +380,7 @@ export function WatchTable({ rows }: { rows: WatchRow[] }) {
                 <div className="text-right text-xs text-slate-500">
                   <div>
                     {TRIP_LABEL[watch.trip_type] ?? watch.trip_type}・
-                    {frequencyLabel(watch.frequency_minutes)}
+                    {frequencyLabel(watch)}
                   </div>
                   <div className="mt-0.5">
                     當月均價{" "}
@@ -433,7 +438,7 @@ export function WatchTable({ rows }: { rows: WatchRow[] }) {
                         {TRIP_LABEL[watch.trip_type] ?? watch.trip_type}
                       </td>
                       <td className="py-3 pr-4 text-slate-600">
-                        {frequencyLabel(watch.frequency_minutes)}
+                        {frequencyLabel(watch)}
                       </td>
                       <td className="py-3 pr-4">
                         {latest ? (

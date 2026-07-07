@@ -17,6 +17,7 @@ export type CreateWatchInput = {
   return_date: string | null;
   segments: FlightSegment[] | null;
   frequency_minutes: number;
+  scan_hour: number | null;
   max_price: number | null;
 };
 

@@ -27,7 +27,13 @@ function dateOrNull(formData: FormData, key: string): string | null {
 
 export async function createWatchAction(formData: FormData) {
   const tripType = str(formData, "trip_type") as TripType;
-  const frequency = parseInt(str(formData, "frequency_minutes"), 10) || 360;
+  const frequency = parseInt(str(formData, "frequency_minutes"), 10) || 1440;
+  // 每天模式才有掃描時刻（0–23，台灣時間）。
+  const scanHourRaw = parseInt(str(formData, "scan_hour"), 10);
+  const scanHour =
+    frequency >= 1440 && Number.isFinite(scanHourRaw)
+      ? Math.min(23, Math.max(0, scanHourRaw))
+      : null;
   const maxPriceRaw = parseInt(str(formData, "max_price"), 10);
   const maxPrice = Number.isFinite(maxPriceRaw) && maxPriceRaw > 0 ? maxPriceRaw : null;
 
@@ -72,6 +78,7 @@ export async function createWatchAction(formData: FormData) {
     return_date: tripType === "round_trip" ? dateOrNull(formData, "return_date") : null,
     segments,
     frequency_minutes: frequency,
+    scan_hour: scanHour,
     max_price: maxPrice,
   });
 

@@ -37,7 +37,8 @@ create table if not exists public.radar_watches (
   depart_date          date,
   return_date          date,
   segments             jsonb,
-  frequency_minutes    integer not null default 360,
+  frequency_minutes    integer not null default 1440,
+  scan_hour            smallint check (scan_hour between 0 and 23),
   max_price            integer,
   status               text not null default 'active'
                          check (status in ('active', 'paused')),

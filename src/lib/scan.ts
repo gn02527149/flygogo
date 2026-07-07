@@ -47,12 +47,29 @@ export function monthlyAverage(
   return { average, samples: prices.length };
 }
 
+// 台灣時區偏移（UTC+8，無夏令時間）。
+const TAIPEI_OFFSET_MS = 8 * 3_600_000;
+const DAY_MS = 86_400_000;
+
 function isDue(watch: RadarWatch, now: number): boolean {
   if (!watch.last_scanned_at) return true;
-  return (
-    now - Date.parse(watch.last_scanned_at) >=
-    watch.frequency_minutes * 60_000
-  );
+  const last = Date.parse(watch.last_scanned_at);
+
+  // 每天一次且有指定時刻：找出最近一次「已到」的排程時間點
+  // （台灣時間今天 scan_hour 點；還沒到就是昨天的），上次掃描早於它即到期。
+  if (watch.frequency_minutes >= 1440 && watch.scan_hour != null) {
+    const taipeiNow = now + TAIPEI_OFFSET_MS;
+    let scheduled =
+      Math.floor(taipeiNow / DAY_MS) * DAY_MS +
+      watch.scan_hour * 3_600_000 -
+      TAIPEI_OFFSET_MS;
+    if (scheduled > now) {
+      scheduled -= DAY_MS;
+    }
+    return last < scheduled;
+  }
+
+  return now - last >= watch.frequency_minutes * 60_000;
 }
 
 export type ScanResult = {

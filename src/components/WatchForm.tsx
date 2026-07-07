@@ -10,12 +10,13 @@ const TRIP_TYPES: { value: TripType; label: string; hint: string }[] = [
   { value: "multi_city", label: "外站票", hint: "4 段以上" },
 ];
 
+// 使用真實報價（SerpApi 免費額度 250 次/月）時，高頻掃描會快速耗盡額度；
+// 機票價格一天通常也只變動 2–4 次，預設每天一次。
 const FREQUENCIES = [
-  { value: 15, label: "每 15 分鐘" },
-  { value: 60, label: "每小時" },
-  { value: 360, label: "每 6 小時" },
+  { value: 1440, label: "每天（建議）" },
   { value: 720, label: "每 12 小時" },
-  { value: 1440, label: "每天" },
+  { value: 360, label: "每 6 小時" },
+  { value: 60, label: "每小時（耗額度）" },
 ];
 
 const MIN_SEGMENTS = 4;
@@ -36,6 +37,7 @@ export function WatchForm({
   action: (formData: FormData) => Promise<void>;
 }) {
   const [tripType, setTripType] = useState<TripType>("one_way");
+  const [frequency, setFrequency] = useState(1440);
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
   const [segments, setSegments] = useState<FlightSegment[]>(() =>
@@ -231,7 +233,7 @@ export function WatchForm({
         </div>
       )}
 
-      {/* 偵測頻率 + 價格門檻 */}
+      {/* 偵測頻率 + 每天掃描時間 + 價格門檻 */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
           <label className={labelCls} htmlFor="watch-frequency">
@@ -240,7 +242,8 @@ export function WatchForm({
           <select
             id="watch-frequency"
             name="frequency_minutes"
-            defaultValue={360}
+            value={frequency}
+            onChange={(e) => setFrequency(parseInt(e.target.value, 10))}
             className={inputCls}
           >
             {FREQUENCIES.map((f) => (
@@ -250,6 +253,25 @@ export function WatchForm({
             ))}
           </select>
         </div>
+        {frequency >= 1440 ? (
+          <div>
+            <label className={labelCls} htmlFor="watch-scan-hour">
+              每天掃描時間（台灣時間）
+            </label>
+            <select
+              id="watch-scan-hour"
+              name="scan_hour"
+              defaultValue={8}
+              className={inputCls}
+            >
+              {Array.from({ length: 24 }, (_, h) => (
+                <option key={h} value={h}>
+                  {String(h).padStart(2, "0")}:00
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : null}
         <div>
           <label className={labelCls} htmlFor="watch-max-price">
             價格門檻 TWD（選填）

@@ -35,6 +35,8 @@ export type RadarWatch = {
   segments: FlightSegment[] | null;
   // How often the radar re-checks the price.
   frequency_minutes: number;
+  // 每天掃描時刻（0–23，台灣時間）。僅 frequency_minutes >= 1440（每天）時使用。
+  scan_hour: number | null;
   // Optional hard threshold (TWD); alert immediately when price drops below it.
   max_price: number | null;
   status: RadarWatchStatus;
