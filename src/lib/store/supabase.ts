@@ -1,4 +1,5 @@
 import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import type {
   DestinationGroup,
   PriceAlert,
@@ -14,16 +15,20 @@ import type {
 
 // Supabase-backed store. Every method degrades to a safe no-op / empty result
 // on connection errors so a bad network never crashes a page render.
+//
+// 兩種實例：
+// - supabaseStore：走使用者 session（cookie），RLS 只讓他看/寫自己的資料
+// - supabaseAdminStore：走 service role（cron 排程用），可掃全部人的守望，
+//   寫入時由呼叫端在 input 帶 user_id 標記資料主人
 
-async function client() {
-  return getSupabaseServerClient();
-}
+type ClientGetter = () => ReturnType<typeof getSupabaseServerClient>;
 
 function logError(op: string, err: unknown) {
   console.error(`[store] ${op}:`, err instanceof Error ? err.message : err);
 }
 
-export const supabaseStore: Store = {
+function createSupabaseStore(client: ClientGetter): Store {
+  return {
   async listGroups() {
     const supabase = await client();
     if (!supabase) return [];
@@ -176,4 +181,13 @@ export const supabaseStore: Store = {
       logError("markAlertsRead", err);
     }
   },
-};
+  };
+}
+
+export const supabaseStore: Store = createSupabaseStore(() =>
+  getSupabaseServerClient()
+);
+
+export const supabaseAdminStore: Store = createSupabaseStore(async () =>
+  getSupabaseAdminClient()
+);

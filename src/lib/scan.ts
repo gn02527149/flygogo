@@ -1,5 +1,5 @@
 import { getFlightQuote, type FlightQuery } from "@/lib/flights";
-import { getStore } from "@/lib/store";
+import { getStore, type Store } from "@/lib/store";
 import type { PriceSnapshot, RadarWatch } from "@/lib/types";
 
 // Baseline alerts need at least this many same-month samples before firing,
@@ -83,8 +83,11 @@ export type ScanResult = {
  * record a snapshot, and raise an alert when the price undercuts the
  * same-month average baseline or the watch's max_price threshold.
  */
-export async function scanWatches({ force = false } = {}): Promise<ScanResult> {
-  const store = getStore();
+export async function scanWatches({
+  force = false,
+  // 預設走使用者 session store；cron 排程傳入 admin store 掃全部人。
+  store = getStore(),
+}: { force?: boolean; store?: Store } = {}): Promise<ScanResult> {
   const now = Date.now();
   const watches = await store.listWatches();
   const unread = await store.listAlerts(true);
@@ -108,6 +111,7 @@ export async function scanWatches({ force = false } = {}): Promise<ScanResult> {
 
     await store.addSnapshot({
       watch_id: watch.id,
+      user_id: watch.user_id,
       price: quote.price,
       currency: quote.currency,
       options: quote.options.length ? quote.options : null,
@@ -135,6 +139,7 @@ export async function scanWatches({ force = false } = {}): Promise<ScanResult> {
         : `目前 TWD ${quote.price.toLocaleString()}，低於設定門檻 TWD ${watch.max_price?.toLocaleString()}`;
       await store.createAlert({
         watch_id: watch.id,
+        user_id: watch.user_id,
         watch_name: watch.name,
         price: quote.price,
         baseline: belowBaseline ? baseline.average : null,

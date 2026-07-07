@@ -23,6 +23,8 @@ export type CreateWatchInput = {
 
 export type CreateAlertInput = {
   watch_id: string;
+  // cron（service role）寫入時必填；一般使用者 session 寫入可省略（DB default auth.uid()）。
+  user_id?: string | null;
   watch_name: string;
   price: number;
   baseline: number | null;
@@ -32,6 +34,7 @@ export type CreateAlertInput = {
 
 export type CreateSnapshotInput = {
   watch_id: string;
+  user_id?: string | null;
   price: number;
   currency: string;
   options: FlightOption[] | null;

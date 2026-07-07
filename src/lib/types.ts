@@ -22,6 +22,8 @@ export type FlightSegment = {
 
 export type RadarWatch = {
   id: string;
+  // 資料擁有者（Supabase auth.users.id）。記憶體示範模式為 undefined。
+  user_id?: string | null;
   name: string;
   // Optional link to a destination group; null means an ad-hoc watch.
   destination_group_id: string | null;
