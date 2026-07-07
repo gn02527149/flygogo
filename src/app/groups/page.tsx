@@ -15,7 +15,7 @@ export default async function GroupsPage() {
 
       {groups.length === 0 ? (
         <Card>
-          <EmptyState message="尚無目的地群組。串接 Supabase 後即可在此分群管理機場代碼。" />
+          <EmptyState message="尚無目的地群組。此功能開發中：之後可將多個機場分成一組（例如「東京雙機場」＝成田＋羽田），讓一個航段同時監控整組目的地。" />
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
