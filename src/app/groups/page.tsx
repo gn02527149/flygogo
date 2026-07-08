@@ -4,6 +4,7 @@ import { airportLabel } from "@/lib/airports";
 import { getStore } from "@/lib/store";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import { deleteGroupAction } from "@/app/actions";
+import { SubmitButton } from "@/components/SubmitButton";
 
 export const dynamic = "force-dynamic";
 
@@ -75,12 +76,9 @@ export default async function GroupsPage({
                       </div>
                     </div>
                     <form action={deleteGroupAction.bind(null, group.id)}>
-                      <button
-                        type="submit"
-                        className="shrink-0 rounded-md border border-rose-200 px-2 py-1 text-xs text-rose-500 transition-colors hover:border-rose-300 hover:bg-rose-50"
-                      >
+                      <SubmitButton className="shrink-0 rounded-md border border-rose-200 px-2 py-1 text-xs text-rose-500 transition-colors hover:border-rose-300 hover:bg-rose-50">
                         刪除
-                      </button>
+                      </SubmitButton>
                     </form>
                   </div>
                 </li>

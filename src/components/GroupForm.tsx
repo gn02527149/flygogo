@@ -4,6 +4,7 @@ import { useState } from "react";
 import { AirportSelect } from "@/components/AirportSelect";
 import { airportLabel } from "@/lib/airports";
 import { createGroupAction } from "@/app/actions";
+import { SubmitButton } from "@/components/SubmitButton";
 
 const inputCls =
   "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none";
@@ -101,13 +102,13 @@ export function GroupForm() {
         )}
       </div>
 
-      <button
-        type="submit"
+      <SubmitButton
         disabled={!name.trim() || codes.length === 0}
+        pendingText="建立中…"
         className="rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
       >
         建立群組
-      </button>
+      </SubmitButton>
     </form>
   );
 }

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { deleteWatchAction, toggleWatchAction } from "@/app/actions";
 import { airportLabel } from "@/lib/airports";
 import { baggageLabel, timeRange } from "@/lib/format";
+import { SubmitButton } from "@/components/SubmitButton";
 import type { PriceSnapshot, RadarWatch } from "@/lib/types";
 
 export type WatchRow = {
@@ -100,24 +101,22 @@ function WatchActions({
         action={toggleWatchAction.bind(null, watch.id, watch.status)}
         className={size === "md" ? "flex-1" : ""}
       >
-        <button
-          type="submit"
+        <SubmitButton
           className={`${btn} w-full border border-slate-200 text-center font-medium text-slate-500 transition-colors hover:border-slate-300 hover:text-slate-700`}
         >
           {watch.status === "active" ? "暫停" : "啟用"}
-        </button>
+        </SubmitButton>
       </form>
       <form
         action={deleteWatchAction.bind(null, watch.id)}
         onSubmit={onDelete}
         className={size === "md" ? "flex-1" : ""}
       >
-        <button
-          type="submit"
+        <SubmitButton
           className={`${btn} w-full border border-rose-200 text-center font-medium text-rose-500 transition-colors hover:border-rose-300 hover:bg-rose-50`}
         >
           刪除
-        </button>
+        </SubmitButton>
       </form>
     </div>
   );

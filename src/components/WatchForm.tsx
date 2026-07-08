@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { DestinationGroup, FlightSegment, TripType } from "@/lib/types";
 import { AirportSelect } from "@/components/AirportSelect";
+import { SubmitButton } from "@/components/SubmitButton";
 
 const TRIP_TYPES: { value: TripType; label: string; hint: string }[] = [
   { value: "one_way", label: "單程", hint: "A → B" },
@@ -320,13 +321,13 @@ export function WatchForm({
         每天在你選的時間自動掃描一次；除了門檻價之外，只要掃到的價格低於「當月平均票價」就會跳出警示。
       </p>
 
-      <button
-        type="submit"
+      <SubmitButton
         disabled={!formValid}
+        pendingText="建立中…"
         className="rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
       >
         建立航段
-      </button>
+      </SubmitButton>
     </form>
   );
 }

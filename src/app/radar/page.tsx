@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Card, ConfigBanner, EmptyState, PageHeader } from "@/components/ui";
 import { WatchTable, type WatchRow } from "@/components/WatchTable";
+import { SubmitButton } from "@/components/SubmitButton";
 import { getStore } from "@/lib/store";
 import { monthlyAverage } from "@/lib/scan";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
@@ -44,12 +45,12 @@ export default async function RadarPage() {
         <PageHeader title="雷達" description="航段價格清單，點擊航段可查看航班明細" />
         <div className="-mt-2 flex gap-2 sm:mt-0">
           <form action={scanNowAction} className="flex-1 sm:flex-none">
-            <button
-              type="submit"
+            <SubmitButton
+              pendingText="掃描中…"
               className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:border-slate-400"
             >
               ⚡ 立即掃描
-            </button>
+            </SubmitButton>
           </form>
           <Link
             href="/radar/new"
