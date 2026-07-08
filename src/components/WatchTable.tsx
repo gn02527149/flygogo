@@ -12,6 +12,8 @@ export type WatchRow = {
   baseline: { average: number; samples: number } | null;
   // 最近的掃描紀錄（新到舊），供彈窗的價格走勢使用。
   history: PriceSnapshot[];
+  // 綁定目的地群組時的群組名稱。
+  groupName?: string | null;
 };
 
 const TRIP_LABEL: Record<string, string> = {
@@ -31,7 +33,7 @@ function frequencyLabel(watch: RadarWatch): string {
   return `每 ${minutes / 60} 小時`;
 }
 
-function routeSummary(watch: RadarWatch): string {
+function routeSummary(watch: RadarWatch, groupName?: string | null): string {
   if (watch.trip_type === "multi_city" && watch.segments?.length) {
     const stops = [
       ...watch.segments.map((s) => s.origin),
@@ -40,14 +42,20 @@ function routeSummary(watch: RadarWatch): string {
     return `${stops.join("→")}（${watch.segments.length} 段）`;
   }
   const arrow = watch.trip_type === "round_trip" ? "⇄" : "→";
+  if (!watch.destination && groupName) {
+    return `${watch.origin} ${arrow} ${groupName}`;
+  }
   return `${watch.origin} ${arrow} ${watch.destination ?? "?"}`;
 }
 
-function zhRoute(watch: RadarWatch): string {
+function zhRoute(watch: RadarWatch, groupName?: string | null): string {
   if (watch.trip_type === "multi_city" && watch.segments?.length) {
     return `${airportLabel(watch.segments[0].origin)} 出發，共 ${watch.segments.length} 段`;
   }
   const arrow = watch.trip_type === "round_trip" ? "⇄" : "→";
+  if (!watch.destination && groupName) {
+    return `${airportLabel(watch.origin)} ${arrow} ${groupName}（群組）`;
+  }
   return `${airportLabel(watch.origin)} ${arrow} ${airportLabel(watch.destination ?? "")}`;
 }
 
@@ -148,7 +156,7 @@ function Sparkline({ prices, alert }: { prices: number[]; alert: boolean }) {
 }
 
 function DetailModal({ row, onClose }: { row: WatchRow; onClose: () => void }) {
-  const { watch, latest, baseline, history } = row;
+  const { watch, latest, baseline, history, groupName } = row;
   const belowAvg = isBelowAvg(row);
   // history 是新到舊；走勢圖要舊到新。
   const trend = [...history].reverse().map((s) => s.price);
@@ -184,9 +192,11 @@ function DetailModal({ row, onClose }: { row: WatchRow; onClose: () => void }) {
               <h2 className="text-lg font-bold text-slate-900">{watch.name}</h2>
               <StatusBadge status={watch.status} />
             </div>
-            <div className="mt-1 text-sm text-slate-500">{zhRoute(watch)}</div>
+            <div className="mt-1 text-sm text-slate-500">
+              {zhRoute(watch, groupName)}
+            </div>
             <div className="font-mono text-xs text-slate-400">
-              {routeSummary(watch)}
+              {routeSummary(watch, groupName)}
             </div>
           </div>
           <button
@@ -279,6 +289,7 @@ function DetailModal({ row, onClose }: { row: WatchRow; onClose: () => void }) {
                       </span>
                     </div>
                     <div className="mt-0.5 truncate text-xs text-slate-400">
+                      {option.destination ? `→ ${option.destination}・` : ""}
                       {timeRange(option)}・{baggageLabel(option)}
                     </div>
                   </div>
@@ -344,7 +355,7 @@ export function WatchTable({ rows }: { rows: WatchRow[] }) {
       {/* 手機：卡片清單 */}
       <div className="flex flex-col gap-3 md:hidden">
         {rows.map((row) => {
-          const { watch, latest, baseline } = row;
+          const { watch, latest, baseline, groupName } = row;
           const belowAvg = isBelowAvg(row);
           return (
             <button
@@ -357,7 +368,7 @@ export function WatchTable({ rows }: { rows: WatchRow[] }) {
                 <div>
                   <div className="font-medium text-slate-800">{watch.name}</div>
                   <div className="mt-0.5 font-mono text-xs text-slate-400">
-                    {routeSummary(watch)}
+                    {routeSummary(watch, groupName)}
                   </div>
                 </div>
                 <StatusBadge status={watch.status} />
@@ -418,7 +429,7 @@ export function WatchTable({ rows }: { rows: WatchRow[] }) {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {rows.map((row) => {
-                  const { watch, latest, baseline } = row;
+                  const { watch, latest, baseline, groupName } = row;
                   const belowAvg = isBelowAvg(row);
                   return (
                     <tr
@@ -431,7 +442,7 @@ export function WatchTable({ rows }: { rows: WatchRow[] }) {
                           {watch.name}
                         </div>
                         <div className="font-mono text-xs text-slate-400">
-                          {routeSummary(watch)}
+                          {routeSummary(watch, groupName)}
                         </div>
                       </td>
                       <td className="py-3 pr-4 text-slate-600">

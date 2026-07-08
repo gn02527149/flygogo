@@ -8,6 +8,7 @@ import type {
 } from "@/lib/types";
 import type {
   CreateAlertInput,
+  CreateGroupInput,
   CreateSnapshotInput,
   CreateWatchInput,
   Store,
@@ -42,6 +43,37 @@ function createSupabaseStore(client: ClientGetter): Store {
     } catch (err) {
       logError("listGroups", err);
       return [];
+    }
+  },
+
+  async createGroup(input: CreateGroupInput) {
+    const supabase = await client();
+    if (!supabase) return null;
+    try {
+      const { data, error } = await supabase
+        .from("destination_groups")
+        .insert(input)
+        .select()
+        .single();
+      if (error) throw error;
+      return data as DestinationGroup;
+    } catch (err) {
+      logError("createGroup", err);
+      return null;
+    }
+  },
+
+  async deleteGroup(id: string) {
+    const supabase = await client();
+    if (!supabase) return;
+    try {
+      const { error } = await supabase
+        .from("destination_groups")
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+    } catch (err) {
+      logError("deleteGroup", err);
     }
   },
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { FlightSegment, TripType } from "@/lib/types";
+import type { DestinationGroup, FlightSegment, TripType } from "@/lib/types";
 import { AirportSelect } from "@/components/AirportSelect";
 
 const TRIP_TYPES: { value: TripType; label: string; hint: string }[] = [
@@ -24,12 +24,17 @@ const labelCls = "mb-1 block text-xs font-medium text-slate-500";
 
 export function WatchForm({
   action,
+  groups = [],
 }: {
   action: (formData: FormData) => Promise<void>;
+  groups?: DestinationGroup[];
 }) {
   const [tripType, setTripType] = useState<TripType>("one_way");
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
+  // 目的地模式：單一機場或目的地群組
+  const [destMode, setDestMode] = useState<"airport" | "group">("airport");
+  const [groupId, setGroupId] = useState("");
   const [segments, setSegments] = useState<FlightSegment[]>(() =>
     Array.from({ length: MIN_SEGMENTS }, emptySegment)
   );
@@ -47,17 +52,27 @@ export function WatchForm({
   };
 
   const isMulti = tripType === "multi_city";
+  const useGroup = !isMulti && destMode === "group";
   const formValid = isMulti
     ? segments.length >= MIN_SEGMENTS &&
       segments.every((s) => s.origin.trim() && s.destination.trim())
-    : Boolean(origin && destination);
+    : Boolean(origin && (useGroup ? groupId : destination));
 
   return (
     <form action={action} className="flex flex-col gap-5">
       <input type="hidden" name="trip_type" value={tripType} />
       <input type="hidden" name="segments" value={JSON.stringify(segments)} />
       <input type="hidden" name="origin" value={origin} />
-      <input type="hidden" name="destination" value={destination} />
+      <input
+        type="hidden"
+        name="destination"
+        value={useGroup ? "" : destination}
+      />
+      <input
+        type="hidden"
+        name="destination_group_id"
+        value={useGroup ? groupId : ""}
+      />
 
       {/* 行程類型 */}
       <div>
@@ -111,13 +126,56 @@ export function WatchForm({
             />
           </div>
           <div>
-            <span className={labelCls}>抵達機場</span>
-            <AirportSelect
-              value={destination}
-              onChange={setDestination}
-              placeholder="例如：東京、NRT"
-              ariaLabel="抵達機場"
-            />
+            <div className="mb-1 flex items-center justify-between">
+              <span className="text-xs font-medium text-slate-500">
+                {useGroup ? "目的地群組" : "抵達機場"}
+              </span>
+              {groups.length > 0 ? (
+                <div className="flex gap-1 text-xs">
+                  {(
+                    [
+                      { value: "airport", label: "機場" },
+                      { value: "group", label: "群組" },
+                    ] as const
+                  ).map((mode) => (
+                    <button
+                      key={mode.value}
+                      type="button"
+                      onClick={() => setDestMode(mode.value)}
+                      className={`rounded px-1.5 py-0.5 transition-colors ${
+                        destMode === mode.value
+                          ? "bg-slate-900 text-white"
+                          : "text-slate-400 hover:text-slate-600"
+                      }`}
+                    >
+                      {mode.label}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+            {useGroup ? (
+              <select
+                value={groupId}
+                onChange={(e) => setGroupId(e.target.value)}
+                className={inputCls}
+                aria-label="目的地群組"
+              >
+                <option value="">選擇群組…</option>
+                {groups.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.name}（{g.airport_codes.join("・")}）
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <AirportSelect
+                value={destination}
+                onChange={setDestination}
+                placeholder="例如：東京、NRT"
+                ariaLabel="抵達機場"
+              />
+            )}
           </div>
           <div>
             <label className={labelCls} htmlFor="watch-depart">

@@ -1,6 +1,6 @@
-import { getFlightQuote, type FlightQuery } from "@/lib/flights";
+import { getFlightQuote, type FlightQuery, type PriceQuote } from "@/lib/flights";
 import { getStore, type Store } from "@/lib/store";
-import type { PriceSnapshot, RadarWatch } from "@/lib/types";
+import type { DestinationGroup, PriceSnapshot, RadarWatch } from "@/lib/types";
 
 // Baseline alerts need at least this many same-month samples before firing,
 // so a watch's first couple of scans don't produce noise.
@@ -78,6 +78,54 @@ export type ScanResult = {
 };
 
 /**
+ * 取得一個航段的報價。綁定目的地群組的航段會對群組內每個機場各查一次，
+ * 回傳最低價，並把所有機場的選項合併排序（標上目的地代碼）取前 5。
+ */
+async function quoteForWatch(
+  watch: RadarWatch,
+  group: DestinationGroup | undefined
+): Promise<PriceQuote> {
+  const airports =
+    watch.trip_type !== "multi_city" && group?.airport_codes.length
+      ? group.airport_codes
+      : null;
+
+  if (!airports) {
+    return getFlightQuote(watchToQuery(watch));
+  }
+
+  const quotes: PriceQuote[] = [];
+  for (const code of airports) {
+    try {
+      const quote = await getFlightQuote(
+        watchToQuery({ ...watch, destination: code })
+      );
+      quotes.push({
+        ...quote,
+        options: quote.options.map((o) => ({ ...o, destination: code })),
+      });
+    } catch (err) {
+      console.error(`[scan] ${watch.name} → ${code}:`, err);
+    }
+  }
+  if (quotes.length === 0) {
+    throw new Error("group scan: all airports failed");
+  }
+
+  const options = quotes
+    .flatMap((q) => q.options)
+    .sort((a, b) => a.price - b.price)
+    .slice(0, 5);
+  const cheapest = quotes.reduce((a, b) => (a.price <= b.price ? a : b));
+  return {
+    price: options[0]?.price ?? cheapest.price,
+    currency: cheapest.currency,
+    provider: cheapest.provider,
+    options,
+  };
+}
+
+/**
  * Scan all active watches that are due per their frequency_minutes
  * (or every active watch when `force` is true). For each: fetch a quote,
  * record a snapshot, and raise an alert when the price undercuts the
@@ -90,6 +138,8 @@ export async function scanWatches({
 }: { force?: boolean; store?: Store } = {}): Promise<ScanResult> {
   const now = Date.now();
   const watches = await store.listWatches();
+  const groups = await store.listGroups();
+  const groupById = new Map(groups.map((g) => [g.id, g]));
   const unread = await store.listAlerts(true);
   // One live alert per watch at a time — don't stack duplicates every scan.
   const alreadyAlerted = new Set(unread.map((a) => a.watch_id));
@@ -103,7 +153,12 @@ export async function scanWatches({
 
     let quote;
     try {
-      quote = await getFlightQuote(watchToQuery(watch));
+      quote = await quoteForWatch(
+        watch,
+        watch.destination_group_id
+          ? groupById.get(watch.destination_group_id)
+          : undefined
+      );
     } catch (err) {
       console.error(`[scan] ${watch.name}:`, err);
       continue;

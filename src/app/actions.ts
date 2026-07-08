@@ -39,6 +39,7 @@ export async function createWatchAction(formData: FormData) {
 
   let origin = code(formData, "origin");
   let destination: string | null = code(formData, "destination") || null;
+  const groupId = str(formData, "destination_group_id") || null;
   let segments: FlightSegment[] | null = null;
 
   if (tripType === "multi_city") {
@@ -60,20 +61,32 @@ export async function createWatchAction(formData: FormData) {
     }
     origin = segments[0].origin;
     destination = null;
+  } else if (groupId) {
+    // 綁定目的地群組：目的地留空，掃描時展開群組內每個機場。
+    destination = null;
+    if (!origin) {
+      redirect("/radar/new?error=route");
+    }
   } else if (!origin || !destination) {
     redirect("/radar/new?error=route");
   }
 
+  let destLabel = destination ? zhName(destination) : "";
+  if (groupId) {
+    const group = (await getStore().listGroups()).find((g) => g.id === groupId);
+    destLabel = group ? group.name : "群組";
+  }
   const fallbackName =
     tripType === "multi_city" && segments
       ? `外站票 ${segments.map((s) => s.origin).join("→")}→${segments[segments.length - 1].destination}`
-      : `${zhName(origin)} ${tripType === "round_trip" ? "⇄" : "→"} ${zhName(destination!)}`;
+      : `${zhName(origin)} ${tripType === "round_trip" ? "⇄" : "→"} ${destLabel}`;
 
   await getStore().createWatch({
     name: str(formData, "name") || fallbackName,
     trip_type: tripType,
     origin,
     destination,
+    destination_group_id: groupId,
     depart_date: dateOrNull(formData, "depart_date"),
     return_date: tripType === "round_trip" ? dateOrNull(formData, "return_date") : null,
     segments,
@@ -98,6 +111,43 @@ export async function toggleWatchAction(id: string, currentStatus: string) {
 export async function deleteWatchAction(id: string) {
   await getStore().deleteWatch(id);
   revalidatePath("/radar");
+  revalidatePath("/");
+}
+
+export async function createGroupAction(formData: FormData) {
+  const name = str(formData, "name");
+  let codes: string[] = [];
+  try {
+    codes = (JSON.parse(str(formData, "airport_codes")) as string[])
+      .map((c) => String(c).trim().toUpperCase())
+      .filter(Boolean);
+  } catch {
+    codes = [];
+  }
+  if (!name || codes.length === 0) {
+    redirect("/groups?error=invalid");
+  }
+
+  await getStore().createGroup({
+    name,
+    description: str(formData, "description") || null,
+    airport_codes: Array.from(new Set(codes)),
+  });
+  revalidatePath("/groups");
+  revalidatePath("/");
+}
+
+export async function deleteGroupAction(id: string) {
+  // 有航段還綁著這個群組時不允許刪除，避免航段變成沒有目的地。
+  const store = getStore();
+  const inUse = (await store.listWatches()).some(
+    (w) => w.destination_group_id === id
+  );
+  if (inUse) {
+    redirect("/groups?error=in-use");
+  }
+  await store.deleteGroup(id);
+  revalidatePath("/groups");
   revalidatePath("/");
 }
 

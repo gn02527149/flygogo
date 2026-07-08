@@ -11,10 +11,12 @@ export const dynamic = "force-dynamic";
 
 export default async function RadarPage() {
   const store = getStore();
-  const [watches, snapshots] = await Promise.all([
+  const [watches, snapshots, groups] = await Promise.all([
     store.listWatches(),
     store.listSnapshots(),
+    store.listGroups(),
   ]);
+  const groupName = new Map(groups.map((g) => [g.id, g.name]));
 
   const byWatch = new Map<string, PriceSnapshot[]>();
   for (const snap of snapshots) {
@@ -30,6 +32,9 @@ export default async function RadarPage() {
       latest: snaps[0] ?? null,
       baseline: monthlyAverage(snaps),
       history: snaps.slice(0, 12),
+      groupName: watch.destination_group_id
+        ? (groupName.get(watch.destination_group_id) ?? null)
+        : null,
     };
   });
 

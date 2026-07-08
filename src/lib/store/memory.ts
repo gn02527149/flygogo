@@ -8,6 +8,7 @@ import type {
 import { buildMockOptions, mockBasePrice } from "@/lib/flights/mock";
 import type {
   CreateAlertInput,
+  CreateGroupInput,
   CreateSnapshotInput,
   CreateWatchInput,
   Store,
@@ -177,6 +178,26 @@ function db(): Db {
 export const memoryStore: Store = {
   async listGroups() {
     return [...db().groups];
+  },
+
+  async createGroup(input: CreateGroupInput) {
+    const group: DestinationGroup = {
+      id: randomUUID(),
+      created_at: new Date().toISOString(),
+      ...input,
+    };
+    db().groups.unshift(group);
+    return group;
+  },
+
+  async deleteGroup(id: string) {
+    const data = db();
+    data.groups = data.groups.filter((g) => g.id !== id);
+    for (const watch of data.watches) {
+      if (watch.destination_group_id === id) {
+        watch.destination_group_id = null;
+      }
+    }
   },
 
   async listWatches() {

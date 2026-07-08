@@ -8,11 +8,18 @@ import type {
   TripType,
 } from "@/lib/types";
 
+export type CreateGroupInput = {
+  name: string;
+  description: string | null;
+  airport_codes: string[];
+};
+
 export type CreateWatchInput = {
   name: string;
   trip_type: TripType;
   origin: string;
   destination: string | null;
+  destination_group_id?: string | null;
   depart_date: string | null;
   return_date: string | null;
   segments: FlightSegment[] | null;
@@ -44,6 +51,8 @@ export type CreateSnapshotInput = {
 // in-memory demo store so the app is fully usable without credentials.
 export interface Store {
   listGroups(): Promise<DestinationGroup[]>;
+  createGroup(input: CreateGroupInput): Promise<DestinationGroup | null>;
+  deleteGroup(id: string): Promise<void>;
 
   listWatches(): Promise<RadarWatch[]>;
   createWatch(input: CreateWatchInput): Promise<RadarWatch | null>;

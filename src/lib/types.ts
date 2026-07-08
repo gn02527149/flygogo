@@ -49,6 +49,8 @@ export type RadarWatch = {
 // One bookable itinerary option observed during a scan.
 export type FlightOption = {
   airline: string;
+  // 群組展開掃描時，標記此報價屬於群組中哪個目的地機場。
+  destination?: string | null;
   flight_number: string;
   // Display strings, e.g. "08/06 07:45". Multi-leg: first departure / last arrival.
   depart_time: string;

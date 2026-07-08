@@ -96,6 +96,7 @@ export function AlertToaster() {
                       </span>
                     </div>
                     <div className="mt-0.5 truncate text-slate-400">
+                      {option.destination ? `→ ${option.destination}・` : ""}
                       {timeRange(option)}・{baggageLabel(option)}
                     </div>
                   </div>

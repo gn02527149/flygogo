@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Card, PageHeader } from "@/components/ui";
 import { WatchForm } from "@/components/WatchForm";
+import { getStore } from "@/lib/store";
 import { createWatchAction } from "@/app/actions";
 
 export const dynamic = "force-dynamic";
@@ -15,7 +16,10 @@ export default async function NewWatchPage({
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
-  const { error } = await searchParams;
+  const [{ error }, groups] = await Promise.all([
+    searchParams,
+    getStore().listGroups(),
+  ]);
   const errorMessage = error ? ERROR_MESSAGES[error] : null;
 
   return (
@@ -40,7 +44,7 @@ export default async function NewWatchPage({
       ) : null}
 
       <Card>
-        <WatchForm action={createWatchAction} />
+        <WatchForm action={createWatchAction} groups={groups} />
       </Card>
     </div>
   );
